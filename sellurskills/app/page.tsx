@@ -1,5 +1,5 @@
 "use client";
-
+import Link from "next/link";
 import { useState } from "react";
 import {
   Home as HomeIcon,
@@ -132,12 +132,19 @@ export default function Home() {
           </nav>
 
           <div className="hidden items-center gap-3 md:flex">
-            <button className="text-sm font-semibold text-neutral-700 transition hover:text-neutral-900">
-              Sign in
-            </button>
-            <button className="rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-neutral-800">
-              Get Started
-            </button>
+            <Link
+             href="/login"
+             className="text-sm font-semibold text-neutral-700 transition hover:text-neutral-900"
+            >
+            Sign in
+            </Link>
+
+            <Link
+            href="/register"
+            className="rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-neutral-800"
+            >
+            Get Started
+            </Link>
           </div>
 
           <button
@@ -165,12 +172,19 @@ export default function Home() {
                 Become a Provider
               </a>
               <hr className="border-neutral-200" />
-              <button className="text-left text-sm font-semibold text-neutral-700">
-                Sign in
-              </button>
-              <button className="rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white">
-                Get Started
-              </button>
+              <Link
+  href="/login"
+  className="text-left text-sm font-semibold text-neutral-700"
+>
+  Sign in
+</Link>
+
+<Link
+  href="/register"
+  className="rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white text-center"
+>
+  Get Started
+</Link>
             </div>
           </div>
         )}
@@ -530,12 +544,19 @@ export default function Home() {
             professional on SellurSkills.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <button className="rounded-full bg-white px-7 py-3 text-sm font-semibold text-violet-700 transition hover:bg-violet-50">
-              Find a Provider
-            </button>
-            <button className="rounded-full border border-white/40 px-7 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
-              Become a Provider
-            </button>
+            <Link
+  href="/register"
+  className="rounded-full bg-white px-7 py-3 text-sm font-semibold text-violet-700 transition hover:bg-violet-50"
+>
+  Find a Provider
+</Link>
+
+<Link
+  href="/register"
+  className="rounded-full border border-white/40 px-7 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+>
+  Become a Provider
+</Link>
           </div>
         </div>
       </section>
