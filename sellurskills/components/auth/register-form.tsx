@@ -61,9 +61,12 @@ export function RegisterForm() {
             name: values.name,
             role: values.role,
           },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: "http://localhost:3000/auth/callback",
         },
       })
+
+      console.log("SIGNUP DATA:", data)
+      console.log("SIGNUP ERROR:", error)
 
       if (error) {
         console.error('SIGNUP ERROR:', error)
