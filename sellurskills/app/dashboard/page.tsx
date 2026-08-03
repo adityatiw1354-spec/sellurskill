@@ -1,28 +1,22 @@
-import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { DashboardStats } from "@/components/dashboard/dashboard-stats";
-import { QuickActions } from "@/components/dashboard/quick-actions";
-import { RecentOrders } from "@/components/dashboard/recent-orders";
+import { CustomerDashboard } from "@/components/dashboard/customer-dashboard";
+import { ProviderDashboard } from "@/components/dashboard/provider-dashboard";
+import { AdminDashboard } from "@/components/dashboard/admin-dashboard";
 
 export default function DashboardPage() {
-  return (
-    <DashboardShell>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">
-            Dashboard
-          </h1>
+  // Temporary role
+  const role = "customer";
 
-          <p className="text-slate-500">
-            Welcome back to SellurSkills
-          </p>
-        </div>
+  if (role === "customer") {
+    return <CustomerDashboard />;
+  }
 
-        <DashboardStats />
+  if (role === "provider") {
+    return <ProviderDashboard />;
+  }
 
-        <QuickActions />
+  if (role === "admin") {
+    return <AdminDashboard />;
+  }
 
-        <RecentOrders />
-      </div>
-    </DashboardShell>
-  );
+  return <div>No dashboard found</div>;
 }
