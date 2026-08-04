@@ -5,30 +5,40 @@ import {
   Star,
 } from "lucide-react";
 
-const stats = [
-  {
-    title: "Total Orders",
-    value: "24",
-    icon: ShoppingBag,
-  },
-  {
-    title: "Active Bookings",
-    value: "5",
-    icon: Clock3,
-  },
-  {
-    title: "Completed Jobs",
-    value: "19",
-    icon: CheckCircle,
-  },
-  {
-    title: "Reviews",
-    value: "4.9",
-    icon: Star,
-  },
-];
+type DashboardStatsProps = {
+  totalOrders: number;
+  activeBookings: number;
+  completedJobs: number;
+};
 
-export function DashboardStats() {
+export function DashboardStats({
+  totalOrders,
+  activeBookings,
+  completedJobs,
+}: DashboardStatsProps) {
+  const stats = [
+    {
+      title: "Total Orders",
+      value: totalOrders,
+      icon: ShoppingBag,
+    },
+    {
+      title: "Active Bookings",
+      value: activeBookings,
+      icon: Clock3,
+    },
+    {
+      title: "Completed Jobs",
+      value: completedJobs,
+      icon: CheckCircle,
+    },
+    {
+      title: "Reviews",
+      value: "0",
+      icon: Star,
+    },
+  ];
+
   return (
     <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
       {stats.map((stat) => {

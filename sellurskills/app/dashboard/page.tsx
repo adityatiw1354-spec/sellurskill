@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getCustomerStats } from "@/lib/dashboard";
 
 import { createClient } from "@/lib/supabase/server";
 
@@ -24,15 +25,15 @@ export default async function DashboardPage() {
     .eq("id", user.id)
     .single();
 
-  const role = profile?.role ?? "customer";
+  const stats = await getCustomerStats(user.id);
 
   return (
     <DashboardShell>
-      {role === "customer" && <CustomerDashboard />}
+      {profile?.role === "customer" && <CustomerDashboard stats={stats} />}
 
-      {role === "provider" && <ProviderDashboard />}
+      {profile?.role === "provider" && <ProviderDashboard />}
 
-      {role === "admin" && <AdminDashboard />}
+      {profile?.role === "admin" && <AdminDashboard />}
     </DashboardShell>
   );
 }
