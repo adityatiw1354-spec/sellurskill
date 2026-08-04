@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCustomerStats } from "@/lib/dashboard";
-
+import { getRecentBookings} from "@/lib/dashboard";
 import { createClient } from "@/lib/supabase/server";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
@@ -26,10 +26,11 @@ export default async function DashboardPage() {
     .single();
 
   const stats = await getCustomerStats(user.id);
+  const recentBookings = await getRecentBookings(user.id);
 
   return (
     <DashboardShell>
-      {profile?.role === "customer" && <CustomerDashboard stats={stats} />}
+      {profile?.role === "customer" && <CustomerDashboard stats={stats}recentBookings={recentBookings}/>}
 
       {profile?.role === "provider" && <ProviderDashboard />}
 

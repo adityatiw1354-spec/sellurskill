@@ -1,25 +1,10 @@
-const orders = [
-  {
-    id: "#1001",
-    service: "Plumbing Repair",
-    provider: "Rohit Verma",
-    status: "Completed",
-  },
-  {
-    id: "#1002",
-    service: "House Cleaning",
-    provider: "Ananya Sharma",
-    status: "In Progress",
-  },
-  {
-    id: "#1003",
-    service: "Logo Design",
-    provider: "Karan Mehta",
-    status: "Pending",
-  },
-];
+interface RecentOrdersProps {
+  bookings: any[];
+}
 
-export function RecentOrders() {
+export function RecentOrders({
+  bookings,
+}: RecentOrdersProps) {
   return (
     <div className="rounded-2xl border bg-white p-6 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
@@ -32,34 +17,40 @@ export function RecentOrders() {
         </button>
       </div>
 
-      <div className="space-y-4">
-        {orders.map((order) => (
-          <div
-            key={order.id}
-            className="flex items-center justify-between rounded-xl border p-4"
-          >
-            <div>
-              <p className="font-medium">
-                {order.service}
-              </p>
+      {bookings.length === 0 ? (
+        <div className="rounded-xl border border-dashed p-6 text-center text-slate-500">
+          No bookings yet
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {bookings.map((booking) => (
+            <div
+              key={booking.id}
+              className="flex items-center justify-between rounded-xl border p-4"
+            >
+              <div>
+                <p className="font-medium">
+                  Booking
+                </p>
 
-              <p className="text-sm text-slate-500">
-                {order.provider}
-              </p>
+                <p className="text-sm text-slate-500">
+                  Amount: ₹{booking.amount}
+                </p>
+              </div>
+
+              <div className="text-right">
+                <p className="text-sm font-medium">
+                  {booking.id.slice(0, 8)}
+                </p>
+
+                <span className="text-xs text-violet-600 capitalize">
+                  {booking.status}
+                </span>
+              </div>
             </div>
-
-            <div className="text-right">
-              <p className="text-sm font-medium">
-                {order.id}
-              </p>
-
-              <span className="text-xs text-violet-600">
-                {order.status}
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

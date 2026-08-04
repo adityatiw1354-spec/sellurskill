@@ -8,10 +8,12 @@ interface CustomerDashboardProps {
     activeBookings: number;
     completedJobs: number;
   };
+  recentBookings: any[];
 }
 
 export function CustomerDashboard({
   stats,
+  recentBookings,
 }: CustomerDashboardProps) {
   return (
     <div className="space-y-6">
@@ -33,7 +35,7 @@ export function CustomerDashboard({
 
       <QuickActions />
 
-      <RecentOrders />
+      <RecentOrders bookings={recentBookings} />
     </div>
   );
 }
