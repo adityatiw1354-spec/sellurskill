@@ -1,8 +1,6 @@
-import { DashboardShell } from "./dashboard-shell";
 
 export function AdminDashboard() {
   return (
-    <DashboardShell>
       <div>
         <h1 className="text-3xl font-bold">
           Admin Dashboard
@@ -12,6 +10,5 @@ export function AdminDashboard() {
           Manage platform users and services.
         </p>
       </div>
-    </DashboardShell>
   );
 }

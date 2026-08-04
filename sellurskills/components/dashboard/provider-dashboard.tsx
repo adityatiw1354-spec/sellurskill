@@ -1,8 +1,6 @@
-import { DashboardShell } from "./dashboard-shell";
 
 export function ProviderDashboard() {
   return (
-    <DashboardShell>
       <div>
         <h1 className="text-3xl font-bold">
           Provider Dashboard
@@ -12,6 +10,5 @@ export function ProviderDashboard() {
           Manage jobs, clients and earnings.
         </p>
       </div>
-    </DashboardShell>
   );
 }

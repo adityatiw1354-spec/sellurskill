@@ -1,11 +1,9 @@
-import { DashboardShell } from "./dashboard-shell";
 import { DashboardStats } from "./dashboard-stats";
 import { QuickActions } from "./quick-actions";
 import { RecentOrders } from "./recent-orders";
 
 export function CustomerDashboard() {
   return (
-    <DashboardShell>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">
@@ -23,6 +21,5 @@ export function CustomerDashboard() {
 
         <RecentOrders />
       </div>
-    </DashboardShell>
   );
 }
