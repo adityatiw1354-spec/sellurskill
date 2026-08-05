@@ -45,8 +45,9 @@ export function EditServiceForm({
       }
     );
 
-    console.log(await response.json());
+    const result = await response.json();
 
+console.log("Response:", JSON.stringify(result, null, 2));
     setLoading(false);
 
     if (response.ok) {

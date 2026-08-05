@@ -46,6 +46,8 @@ console.log("Update Error:", error);
   }
 
   return NextResponse.json({
-    success: true,
-  });
+  success: true,
+  data,
+  error,
+});
 }
