@@ -17,13 +17,24 @@ export async function POST(request: Request) {
 
   const body = await request.json();
 
-  const { error } = await supabase.from("bookings").insert({
-    customer_id: user.id,
-    provider_id: body.provider_id,
-    service_id: body.service_id,
-    amount: body.amount,
-    status: "pending",
-  });
+  const { error } = await supabase
+    .from("bookings")
+    .insert({
+      customer_id: user.id,
+      provider_id: body.provider_id,
+      service_id: body.service_id,
+
+      amount: body.amount,
+      status: "pending",
+
+      booking_date: body.booking_date,
+      start_time: body.start_time,
+      end_time: body.end_time,
+
+      address: body.address,
+      phone: body.phone,
+      notes: body.notes,
+    });
 
   if (error) {
     console.log(error);
@@ -35,5 +46,6 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     success: true,
+    message: "Booking created successfully",
   });
 }
