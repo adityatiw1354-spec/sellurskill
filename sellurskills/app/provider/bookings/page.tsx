@@ -61,13 +61,42 @@ export default async function ProviderBookingsPage() {
                     {booking.services?.title}
                   </h2>
 
-                  <p className="mt-2 text-slate-500">
-                    Customer ID:
-                  </p>
+                 <div className="mt-3 space-y-2">
+  <p>
+    <span className="font-semibold">Customer:</span>{" "}
+    {booking.profiles?.full_name}
+  </p>
 
-                  <p className="font-medium">
-                    {booking.customer_id}
-                  </p>
+  <p>
+    <span className="font-semibold">Email:</span>{" "}
+    {booking.profiles?.email}
+  </p>
+
+  <p>
+    <span className="font-semibold">Phone:</span>{" "}
+    {booking.profiles?.phone}
+  </p>
+
+  <p>
+    <span className="font-semibold">Booking Date:</span>{" "}
+    {booking.booking_date}
+  </p>
+
+  <p>
+    <span className="font-semibold">Time:</span>{" "}
+    {booking.start_time} - {booking.end_time}
+  </p>
+
+  <p>
+    <span className="font-semibold">Address:</span>{" "}
+    {booking.address}
+  </p>
+
+  <p>
+    <span className="font-semibold">Notes:</span>{" "}
+    {booking.notes}
+  </p>
+</div>
                 </div>
 
                 <div className="text-right">
