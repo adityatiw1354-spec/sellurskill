@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { BookNowButton } from "@/components/services/book-now-button";
@@ -34,6 +35,10 @@ export default async function ServiceDetailsPage({
   return (
     <div className="mx-auto max-w-4xl p-6 sm:p-8">
       <div className="rounded-2xl border bg-white p-6 shadow-sm sm:p-8">
+        <Link href="/services" className="mb-6 inline-flex text-sm font-medium text-violet-600 hover:underline">
+          ← Back to services
+        </Link>
+
         <h1 className="text-3xl font-bold">{service.title}</h1>
 
         <p className="mt-4 text-slate-600">{service.description}</p>

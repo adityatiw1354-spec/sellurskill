@@ -53,7 +53,7 @@ export function BookNowButton({ serviceId, providerId, amount }: BookNowButtonPr
         throw new Error(result?.error || "Unable to create the booking.");
       }
 
-      setFeedback({ type: "success", text: "Booking created successfully." });
+      setFeedback({ type: "success", text: "Booking created successfully. You can view it from your bookings page." });
       setBookingDate("");
       setStartTime("");
       setEndTime("");
@@ -61,6 +61,7 @@ export function BookNowButton({ serviceId, providerId, amount }: BookNowButtonPr
       setPhone("");
       setNotes("");
       router.refresh();
+      router.push("/customer/bookings");
     } catch (error) {
       setFeedback({
         type: "error",
