@@ -23,13 +23,21 @@ export async function PUT(
 
     if (!user) {
       return NextResponse.json(
-        { success: false, error: "Unauthorized." },
+        { success: false, error: "Authentication required." },
         { status: 401 }
       );
     }
 
-    const body = await request.json();
-    const status = body.status;
+    const body = await request.json().catch(() => null);
+
+    if (!body || typeof body !== "object") {
+      return NextResponse.json(
+        { success: false, error: "Invalid request body." },
+        { status: 400 }
+      );
+    }
+
+    const status = (body as Record<string, unknown>).status;
 
     if (status !== "accepted" && status !== "rejected") {
       return NextResponse.json(
@@ -45,8 +53,10 @@ export async function PUT(
       .maybeSingle();
 
     if (bookingError) {
+      console.error("BOOKING_FETCH_ERROR", bookingError);
+
       return NextResponse.json(
-        { success: false, error: bookingError.message },
+        { success: false, error: "Unable to load the booking." },
         { status: 500 }
       );
     }
@@ -60,7 +70,7 @@ export async function PUT(
 
     if (booking.provider_id !== user.id) {
       return NextResponse.json(
-        { success: false, error: "Unauthorized." },
+        { success: false, error: "You are not allowed to update this booking." },
         { status: 403 }
       );
     }
@@ -85,8 +95,10 @@ export async function PUT(
       .single();
 
     if (error) {
+      console.error("BOOKING_UPDATE_ERROR", error);
+
       return NextResponse.json(
-        { success: false, error: error.message },
+        { success: false, error: "Unable to update the booking." },
         { status: 500 }
       );
     }
@@ -96,12 +108,12 @@ export async function PUT(
       booking: data,
     });
   } catch (error) {
-    console.error(error);
+    console.error("BOOKING_UPDATE_ERROR", error);
 
     return NextResponse.json(
       {
         success: false,
-        error: "Something went wrong.",
+        error: "Unable to update the booking.",
       },
       { status: 500 }
     );

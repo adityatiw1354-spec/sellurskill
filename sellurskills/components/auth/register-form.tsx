@@ -53,6 +53,9 @@ export function RegisterForm() {
     setServerError(null)
 
     try {
+      const siteUrl =
+        process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+
       const { data, error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
@@ -61,7 +64,7 @@ export function RegisterForm() {
             name: values.name,
             role: values.role,
           },
-          emailRedirectTo: "http://localhost:3000/auth/callback",
+          emailRedirectTo: `${siteUrl}/auth/callback`,
         },
       })
 
