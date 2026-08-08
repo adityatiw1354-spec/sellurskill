@@ -1,6 +1,10 @@
 import { redirect } from "next/navigation";
-import { getCustomerStats } from "@/lib/dashboard";
-import { getRecentBookings} from "@/lib/dashboard";
+import {
+  getCustomerStats,
+  getRecentBookings,
+  getProviderStats,
+  getProviderRecentBookings,
+} from "@/lib/dashboard";
 import { createClient } from "@/lib/supabase/server";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
@@ -30,6 +34,17 @@ export default async function DashboardPage() {
     .eq("id", user.id)
     .maybeSingle<ProfileData>();
 
+  if (profile?.role === "provider") {
+    const stats = await getProviderStats(user.id);
+    const recentBookings = await getProviderRecentBookings(user.id);
+
+    return (
+      <DashboardShell profile={profile ?? null}>
+        <ProviderDashboard stats={stats} recentBookings={recentBookings} />
+      </DashboardShell>
+    );
+  }
+
   const stats = await getCustomerStats(user.id);
   const recentBookings = await getRecentBookings(user.id);
 
@@ -38,8 +53,6 @@ export default async function DashboardPage() {
       {profile?.role === "customer" && (
         <CustomerDashboard stats={stats} recentBookings={recentBookings} />
       )}
-
-      {profile?.role === "provider" && <ProviderDashboard />}
 
       {profile?.role === "admin" && <AdminDashboard />}
     </DashboardShell>

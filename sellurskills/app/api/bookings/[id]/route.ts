@@ -28,6 +28,27 @@ export async function PUT(
       );
     }
 
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (profileError) {
+      console.error("BOOKING_UPDATE_PROFILE_ERROR", profileError);
+      return NextResponse.json(
+        { success: false, error: "Unable to validate profile." },
+        { status: 500 }
+      );
+    }
+
+    if (profile?.role !== "provider") {
+      return NextResponse.json(
+        { success: false, error: "Only providers can update bookings." },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json().catch(() => null);
 
     if (!body || typeof body !== "object") {
@@ -100,6 +121,13 @@ export async function PUT(
       return NextResponse.json(
         { success: false, error: "Unable to update the booking." },
         { status: 500 }
+      );
+    }
+
+    if (!data) {
+      return NextResponse.json(
+        { success: false, error: "Booking could not be updated." },
+        { status: 404 }
       );
     }
 

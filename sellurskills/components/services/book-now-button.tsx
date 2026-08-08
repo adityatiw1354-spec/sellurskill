@@ -5,11 +5,10 @@ import { useState } from "react";
 
 interface BookNowButtonProps {
   serviceId: string;
-  providerId: string;
   amount: number;
 }
 
-export function BookNowButton({ serviceId, providerId, amount }: BookNowButtonProps) {
+export function BookNowButton({ serviceId, amount }: BookNowButtonProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -37,7 +36,6 @@ export function BookNowButton({ serviceId, providerId, amount }: BookNowButtonPr
         },
         body: JSON.stringify({
           service_id: serviceId,
-          provider_id: providerId,
           booking_date: bookingDate,
           start_time: startTime,
           end_time: endTime,

@@ -20,6 +20,27 @@ export async function GET() {
       );
     }
 
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (profileError) {
+      console.error("SERVICE_LIST_PROFILE_ERROR", profileError);
+      return NextResponse.json(
+        { success: false, error: "Unable to load profile." },
+        { status: 500 }
+      );
+    }
+
+    if (profile?.role !== "provider") {
+      return NextResponse.json(
+        { success: false, error: "Only providers can view these services." },
+        { status: 403 }
+      );
+    }
+
     const { data: services, error } = await supabase
       .from("services")
       .select("id, title, description, price, duration")
@@ -114,9 +135,13 @@ export async function POST(request: Request) {
 
     if (profileError) {
       console.error("SERVICE_PROFILE_LOOKUP_ERROR", profileError);
+      return NextResponse.json(
+        { success: false, error: "Unable to load profile." },
+        { status: 500 }
+      );
     }
 
-    if (profile?.role && profile.role !== "provider") {
+    if (profile?.role !== "provider") {
       return NextResponse.json(
         { success: false, error: "Only providers can create services." },
         { status: 403 }

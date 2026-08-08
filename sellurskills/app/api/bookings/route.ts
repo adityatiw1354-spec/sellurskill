@@ -32,7 +32,6 @@ export async function POST(request: Request) {
     const typedBody = body as Record<string, unknown>;
 
     const requiredFields = [
-      [typedBody.provider_id, "provider_id"],
       [typedBody.service_id, "service_id"],
       [typedBody.booking_date, "booking_date"],
       [typedBody.start_time, "start_time"],
@@ -58,9 +57,13 @@ export async function POST(request: Request) {
 
     if (profileError) {
       console.error("BOOKING_PROFILE_LOOKUP_ERROR", profileError);
+      return NextResponse.json(
+        { success: false, error: "Unable to validate user role." },
+        { status: 500 }
+      );
     }
 
-    if (profile?.role && profile.role !== "customer") {
+    if (profile?.role !== "customer") {
       return NextResponse.json(
         { success: false, error: "Only customers can create bookings." },
         { status: 403 }
@@ -89,13 +92,6 @@ export async function POST(request: Request) {
       );
     }
 
-    if (service.provider_id !== typedBody.provider_id) {
-      return NextResponse.json(
-        { success: false, error: "Service provider not found." },
-        { status: 404 }
-      );
-    }
-
     if (service.status && service.status !== "active") {
       return NextResponse.json(
         { success: false, error: "This service is not available right now." },
@@ -104,6 +100,7 @@ export async function POST(request: Request) {
     }
 
     const amount = Number(service.price);
+    const notes = typeof typedBody.notes === "string" ? typedBody.notes.trim() : null;
 
     if (!Number.isFinite(amount) || amount <= 0) {
       return NextResponse.json(
@@ -123,7 +120,7 @@ export async function POST(request: Request) {
       end_time: typedBody.end_time,
       address: typedBody.address,
       phone: typedBody.phone,
-      notes: typedBody.notes ?? null,
+      notes,
     });
 
     if (insertError) {

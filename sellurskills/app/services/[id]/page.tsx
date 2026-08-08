@@ -57,7 +57,7 @@ export default async function ServiceDetailsPage({
           </p>
         </div>
 
-        <BookNowButton serviceId={service.id} providerId={service.provider_id} amount={service.price} />
+        <BookNowButton serviceId={service.id} amount={service.price} />
       </div>
     </div>
   );
