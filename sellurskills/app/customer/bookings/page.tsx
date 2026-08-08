@@ -3,6 +3,28 @@ import Link from "next/link";
 
 import { createClient } from "@/lib/supabase/server";
 
+interface BookingRow {
+  id: string;
+  amount: number;
+  status: string;
+  booking_date: string | null;
+  start_time: string | null;
+  end_time: string | null;
+  address: string | null;
+  phone: string | null;
+  notes: string | null;
+  services?: {
+    title?: string | null;
+    duration?: string | null;
+  } | null;
+  providers?: {
+    business_name?: string | null;
+    profiles?: {
+      full_name?: string | null;
+    } | null;
+  } | null;
+}
+
 const statusClasses: Record<string, string> = {
   pending: "bg-amber-500",
   accepted: "bg-emerald-600",
@@ -23,10 +45,28 @@ export default async function CustomerBookingsPage() {
     redirect("/login");
   }
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (profile?.role && profile.role !== "customer") {
+    redirect("/dashboard");
+  }
+
   const { data: bookings, error } = await supabase
     .from("bookings")
     .select(`
-      *,
+      id,
+      amount,
+      status,
+      booking_date,
+      start_time,
+      end_time,
+      address,
+      phone,
+      notes,
       services (
         title,
         duration
@@ -67,7 +107,7 @@ export default async function CustomerBookingsPage() {
           </div>
         ) : (
           <div className="space-y-5">
-            {bookings?.map((booking) => (
+            {(bookings as BookingRow[] | null)?.map((booking) => (
               <div key={booking.id} className="rounded-2xl border bg-white p-6 shadow-sm">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div className="min-w-0">

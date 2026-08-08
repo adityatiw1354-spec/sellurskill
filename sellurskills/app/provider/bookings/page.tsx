@@ -23,6 +23,16 @@ export default async function ProviderBookingsPage() {
     redirect("/login");
   }
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (profile?.role !== "provider") {
+    redirect("/dashboard");
+  }
+
   const { data: bookings, error } = await supabase
     .from("bookings")
     .select(`
