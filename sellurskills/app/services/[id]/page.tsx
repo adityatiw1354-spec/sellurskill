@@ -14,7 +14,17 @@ export default async function ServiceDetailsPage({
 
   const { data: service, error: serviceError } = await supabase
     .from("services")
-    .select("id, title, description, price, duration, provider_id")
+    .select(`
+      id,
+      title,
+      description,
+      price,
+      duration,
+      provider_id,
+      providers (
+        business_name
+      )
+    `)
     .eq("id", id)
     .maybeSingle();
 
@@ -25,12 +35,6 @@ export default async function ServiceDetailsPage({
   if (!service) {
     notFound();
   }
-
-  const { data: providerProfile } = await supabase
-    .from("profiles")
-    .select("full_name, role")
-    .eq("id", service.provider_id)
-    .maybeSingle();
 
   return (
     <div className="mx-auto max-w-4xl p-6 sm:p-8">
@@ -53,7 +57,7 @@ export default async function ServiceDetailsPage({
         <div className="mt-6 rounded-xl bg-slate-50 p-4">
           <h2 className="font-semibold text-slate-800">Provider</h2>
           <p className="mt-1 text-sm text-slate-600">
-            {providerProfile?.full_name || "Provider details unavailable"}
+            {service.providers?.[0]?.business_name || "Provider details unavailable"}
           </p>
         </div>
 

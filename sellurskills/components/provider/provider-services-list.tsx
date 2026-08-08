@@ -57,7 +57,7 @@ export default function ProviderServicesList() {
       });
       const result = await response.json().catch(() => null);
 
-      if (!response.ok) {
+      if (!response.ok || result?.success !== true || result?.service?.id !== serviceId) {
         throw new Error(result?.error || "Unable to delete the service.");
       }
 
