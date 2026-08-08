@@ -4,21 +4,21 @@ import { DashboardHeader } from "./dashboard-header";
 
 interface DashboardShellProps {
   children: ReactNode;
+  profile: {
+    role?: string | null;
+    full_name?: string | null;
+  } | null;
 }
 
-export function DashboardShell({
-  children,
-}: DashboardShellProps) {
+export function DashboardShell({ children, profile }: DashboardShellProps) {
   return (
     <div className="min-h-screen bg-slate-50">
-      <DashboardSidebar />
+      <DashboardSidebar role={profile?.role} />
 
       <div className="lg:pl-64">
-        <DashboardHeader />
+        <DashboardHeader profile={profile} />
 
-        <main className="p-6">
-          {children}
-        </main>
+        <main className="p-6">{children}</main>
       </div>
     </div>
   );

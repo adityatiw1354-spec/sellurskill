@@ -8,6 +8,11 @@ import { CustomerDashboard } from "@/components/dashboard/customer-dashboard";
 import { ProviderDashboard } from "@/components/dashboard/provider-dashboard";
 import { AdminDashboard } from "@/components/dashboard/admin-dashboard";
 
+interface ProfileData {
+  role?: string | null;
+  full_name?: string | null;
+}
+
 export default async function DashboardPage() {
   const supabase = await createClient();
 
@@ -23,14 +28,16 @@ export default async function DashboardPage() {
     .from("profiles")
     .select("role, full_name")
     .eq("id", user.id)
-    .single();
+    .maybeSingle<ProfileData>();
 
   const stats = await getCustomerStats(user.id);
   const recentBookings = await getRecentBookings(user.id);
 
   return (
-    <DashboardShell>
-      {profile?.role === "customer" && <CustomerDashboard stats={stats}recentBookings={recentBookings}/>}
+    <DashboardShell profile={profile ?? null}>
+      {profile?.role === "customer" && (
+        <CustomerDashboard stats={stats} recentBookings={recentBookings} />
+      )}
 
       {profile?.role === "provider" && <ProviderDashboard />}
 

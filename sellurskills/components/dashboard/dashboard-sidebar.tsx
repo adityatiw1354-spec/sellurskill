@@ -10,40 +10,78 @@ import {
   User,
 } from "lucide-react";
 
-const menuItems = [
-  {
-    title: "Dashboard",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Browse Services",
-    href: "/services",
-    icon: Search,
-  },
-  {
-    title: "My Orders",
-    href: "/orders",
-    icon: Briefcase,
-  },
-  {
-    title: "Messages",
-    href: "/messages",
-    icon: MessageSquare,
-  },
-  {
-    title: "Profile",
-    href: "/profile",
-    icon: User,
-  },
-  {
-    title: "Settings",
-    href: "/settings",
-    icon: Settings,
-  },
-];
+interface DashboardSidebarProps {
+  role?: string | null;
+}
 
-export function DashboardSidebar() {
+export function DashboardSidebar({ role }: DashboardSidebarProps) {
+  const menuItems =
+    role === "provider"
+      ? [
+          {
+            title: "Dashboard",
+            href: "/dashboard",
+            icon: LayoutDashboard,
+          },
+          {
+            title: "My Services",
+            href: "/provider/services",
+            icon: Briefcase,
+          },
+          {
+            title: "Bookings",
+            href: "/provider/bookings",
+            icon: Briefcase,
+          },
+          {
+            title: "Messages",
+            href: "/messages",
+            icon: MessageSquare,
+          },
+          {
+            title: "Profile",
+            href: "/profile",
+            icon: User,
+          },
+          {
+            title: "Settings",
+            href: "/settings",
+            icon: Settings,
+          },
+        ]
+      : [
+          {
+            title: "Dashboard",
+            href: "/dashboard",
+            icon: LayoutDashboard,
+          },
+          {
+            title: "Browse Services",
+            href: "/services",
+            icon: Search,
+          },
+          {
+            title: "My Bookings",
+            href: "/customer/bookings",
+            icon: Briefcase,
+          },
+          {
+            title: "Messages",
+            href: "/messages",
+            icon: MessageSquare,
+          },
+          {
+            title: "Profile",
+            href: "/profile",
+            icon: User,
+          },
+          {
+            title: "Settings",
+            href: "/settings",
+            icon: Settings,
+          },
+        ];
+
   return (
     <aside className="fixed left-0 top-0 hidden h-screen w-64 border-r bg-white lg:block">
       <div className="flex h-16 items-center border-b px-6">
