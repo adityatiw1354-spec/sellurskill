@@ -14,17 +14,23 @@ export default async function CustomerBookingsPage() {
     redirect("/login");
   }
 
-  const { data: bookings, error } = await supabase
-    .from("bookings")
-    .select(`
-      *,
-      services (
-        title,
-        duration
+const { data: bookings, error } = await supabase
+  .from("bookings")
+  .select(`
+    *,
+    services (
+      title,
+      duration
+    ),
+    providers (
+      business_name,
+      profiles (
+        full_name
       )
-    `)
-    .eq("customer_id", user.id)
-    .order("created_at", { ascending: false });
+    )
+  `)
+  .eq("customer_id", user.id)
+  .order("created_at", { ascending: false });
 
   if (error) {
     console.log(error);
@@ -49,15 +55,46 @@ export default async function CustomerBookingsPage() {
               key={booking.id}
               className="rounded-2xl border bg-white p-6 shadow-sm"
             >
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between">
                 <div>
                   <h2 className="text-xl font-semibold">
                     {booking.services?.title}
                   </h2>
 
                   <p className="mt-1 text-slate-500">
+  Provider: {booking.providers?.profiles?.full_name}
+</p>
+
+                  <p className="mt-1 text-slate-500">
                     Duration: {booking.services?.duration}
                   </p>
+
+                  <p className="mt-3">
+                    <strong>Date:</strong>{" "}
+                    {booking.booking_date}
+                  </p>
+
+                  <p>
+                    <strong>Time:</strong>{" "}
+                    {booking.start_time} - {booking.end_time}
+                  </p>
+
+                  <p>
+                    <strong>Address:</strong>{" "}
+                    {booking.address}
+                  </p>
+
+                  <p>
+                    <strong>Phone:</strong>{" "}
+                    {booking.phone}
+                  </p>
+
+                  {booking.notes && (
+                    <p>
+                      <strong>Notes:</strong>{" "}
+                      {booking.notes}
+                    </p>
+                  )}
                 </div>
 
                 <div className="text-right">
@@ -65,7 +102,15 @@ export default async function CustomerBookingsPage() {
                     ₹{booking.amount}
                   </p>
 
-                  <span className="mt-2 inline-block rounded-full bg-violet-100 px-3 py-1 text-sm text-violet-700">
+                  <span
+                    className={`mt-3 inline-block rounded-full px-3 py-1 text-sm text-white ${
+                      booking.status === "pending"
+                        ? "bg-yellow-500"
+                        : booking.status === "accepted"
+                        ? "bg-green-600"
+                        : "bg-red-600"
+                    }`}
+                  >
                     {booking.status}
                   </span>
                 </div>
