@@ -40,7 +40,11 @@ export default function MyServicesPage() {
   }
 
   useEffect(() => {
-    loadServices();
+    const timeoutId = window.setTimeout(() => {
+      void loadServices();
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
   }, []);
 
   async function handleDelete(serviceId: string) {

@@ -2,13 +2,19 @@ import { DashboardStats } from "./dashboard-stats";
 import { QuickActions } from "./quick-actions";
 import { RecentOrders } from "./recent-orders";
 
+interface RecentBookingItem {
+  id: string;
+  amount: number;
+  status: string;
+}
+
 interface CustomerDashboardProps {
   stats: {
     totalOrders: number;
     activeBookings: number;
     completedJobs: number;
   };
-  recentBookings: any[];
+  recentBookings: RecentBookingItem[];
 }
 
 export function CustomerDashboard({
