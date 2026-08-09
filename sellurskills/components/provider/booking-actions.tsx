@@ -3,25 +3,55 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+type BookingStatus = "pending" | "accepted" | "rejected" | "in_progress" | "completed" | "cancelled";
+
 interface BookingActionsProps {
   bookingId: string;
+  status: BookingStatus;
 }
+
+type ActionStatus = "accepted" | "rejected" | "in_progress" | "completed";
 
 export function BookingActions({
   bookingId,
+  status,
 }: BookingActionsProps) {
   const router = useRouter();
 
-  const [loading, setLoading] = useState<"accepted" | "rejected" | null>(null);
+  const [loading, setLoading] = useState<ActionStatus | null>(null);
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
   } | null>(null);
 
-  async function updateStatus(status: "accepted" | "rejected") {
+  const actionLabels: Record<ActionStatus, string> = {
+    accepted: "Accept",
+    rejected: "Reject",
+    in_progress: "Start Job",
+    completed: "Mark Completed",
+  };
+
+  const loadingLabels: Record<ActionStatus, string> = {
+    accepted: "Accepting...",
+    rejected: "Rejecting...",
+    in_progress: "Starting...",
+    completed: "Completing...",
+  };
+
+  // Determine which actions are valid for the current status
+  const availableActions: ActionStatus[] =
+    status === "pending"
+      ? ["accepted", "rejected"]
+      : status === "accepted"
+        ? ["in_progress"]
+        : status === "in_progress"
+          ? ["completed"]
+          : [];
+
+  async function updateStatus(target: ActionStatus) {
     if (loading) return;
 
-    setLoading(status);
+    setLoading(target);
     setMessage(null);
 
     try {
@@ -30,7 +60,7 @@ export function BookingActions({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ status: target }),
       });
 
       const result = await response.json().catch(() => null);
@@ -41,7 +71,7 @@ export function BookingActions({
 
       setMessage({
         type: "success",
-        text: `Booking ${status === "accepted" ? "accepted" : "rejected"}.`,
+        text: `Booking ${actionLabels[target].toLowerCase()}d.`,
       });
       router.refresh();
     } catch (error) {
@@ -55,6 +85,10 @@ export function BookingActions({
     } finally {
       setLoading(null);
     }
+  }
+
+  if (availableActions.length === 0) {
+    return null;
   }
 
   return (
@@ -72,21 +106,32 @@ export function BookingActions({
       )}
 
       <div className="flex flex-col gap-3 sm:flex-row">
-        <button
-          disabled={loading !== null}
-          onClick={() => updateStatus("accepted")}
-          className="rounded-xl bg-emerald-600 px-5 py-2 text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
-        >
-          {loading === "accepted" ? "Accepting..." : "Accept"}
-        </button>
+        {availableActions.map((action) => {
+          const isAccept = action === "accepted";
+          const isReject = action === "rejected";
+          const isComplete = action === "completed";
 
-        <button
-          disabled={loading !== null}
-          onClick={() => updateStatus("rejected")}
-          className="rounded-xl bg-red-600 px-5 py-2 text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
-        >
-          {loading === "rejected" ? "Rejecting..." : "Reject"}
-        </button>
+          const baseClasses =
+            "rounded-xl px-5 py-2 text-white transition disabled:cursor-not-allowed disabled:opacity-70";
+          const colorClasses = isAccept
+            ? "bg-emerald-600 hover:bg-emerald-700"
+            : isReject
+              ? "bg-red-600 hover:bg-red-700"
+              : isComplete
+                ? "bg-violet-600 hover:bg-violet-700"
+                : "bg-sky-600 hover:bg-sky-700";
+
+          return (
+            <button
+              key={action}
+              disabled={loading !== null}
+              onClick={() => updateStatus(action)}
+              className={`${baseClasses} ${colorClasses}`}
+            >
+              {loading === action ? loadingLabels[action] : actionLabels[action]}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

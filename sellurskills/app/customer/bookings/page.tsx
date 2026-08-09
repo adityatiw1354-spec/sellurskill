@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
+import { CustomerBookingActions } from "@/components/customer/booking-actions";
 import { createClient } from "@/lib/supabase/server";
 
 interface BookingRow {
@@ -143,10 +144,14 @@ export default async function CustomerBookingsPage() {
                   <div className="shrink-0 text-left lg:text-right">
                     <p className="text-xl font-bold text-violet-600">₹{booking.amount}</p>
                     <span className={`mt-3 inline-block rounded-full px-3 py-1 text-sm font-medium text-white ${statusClasses[booking.status as string] || "bg-slate-500"}`}>
-                      {booking.status || "pending"}
+{booking.status || "pending"}
                     </span>
                   </div>
                 </div>
+
+                {(booking.status === "pending" || booking.status === "accepted") && (
+                  <CustomerBookingActions bookingId={booking.id} />
+                )}
               </div>
             ))}
           </div>

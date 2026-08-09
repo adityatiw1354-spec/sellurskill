@@ -121,11 +121,16 @@ export default async function ProviderBookingsPage() {
                       {booking.status}
                     </span>
                   </div>
-                </div>
+</div>
 
-                {booking.status === "pending" && (
+                {(booking.status === "pending" ||
+                  booking.status === "accepted" ||
+                  booking.status === "in_progress") && (
                   <div className="mt-6 border-t pt-5">
-                    <BookingActions bookingId={booking.id} />
+                    <BookingActions
+                      bookingId={booking.id}
+                      status={booking.status as "pending" | "accepted" | "in_progress"}
+                    />
                   </div>
                 )}
               </div>

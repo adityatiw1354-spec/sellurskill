@@ -14,7 +14,8 @@ export async function getCustomerStats(userId: string) {
       bookings?.filter(
         (booking) =>
           booking.status === "pending" ||
-          booking.status === "active"
+          booking.status === "accepted" ||
+          booking.status === "in_progress"
       ).length ?? 0,
 
     completedJobs:

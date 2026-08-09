@@ -21,6 +21,9 @@ const statusClasses: Record<string, string> = {
   pending: "bg-amber-500",
   accepted: "bg-emerald-600",
   rejected: "bg-rose-600",
+  in_progress: "bg-sky-600",
+  completed: "bg-violet-600",
+  cancelled: "bg-slate-600",
 };
 
 export function ProviderDashboard({ stats, recentBookings }: ProviderDashboardProps) {

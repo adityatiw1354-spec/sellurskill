@@ -1,6 +1,38 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
+type BookingStatus = "pending" | "accepted" | "rejected" | "in_progress" | "completed" | "cancelled";
+
+/**
+ * Allowed provider transitions: { currentStatus -> [allowedTargets] }
+ */
+const PROVIDER_TRANSITIONS: Record<BookingStatus, BookingStatus[]> = {
+  pending: ["accepted", "rejected"],
+  accepted: ["in_progress"],
+  in_progress: ["completed"],
+  completed: [],
+  rejected: [],
+  cancelled: [],
+};
+
+/**
+ * Allowed customer transitions: { currentStatus -> [allowedTargets] }
+ */
+const CUSTOMER_TRANSITIONS: Record<BookingStatus, BookingStatus[]> = {
+  pending: ["cancelled"],
+  accepted: ["cancelled"],
+  in_progress: [],
+  completed: [],
+  rejected: [],
+  cancelled: [],
+};
+
+const VALID_STATUSES = new Set<string>(Object.keys(PROVIDER_TRANSITIONS));
+
+function isBookingStatus(value: unknown): value is BookingStatus {
+  return typeof value === "string" && VALID_STATUSES.has(value);
+}
+
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -42,9 +74,9 @@ export async function PUT(
       );
     }
 
-    if (profile?.role !== "provider") {
+    if (!profile?.role || (profile.role !== "provider" && profile.role !== "customer")) {
       return NextResponse.json(
-        { success: false, error: "Only providers can update bookings." },
+        { success: false, error: "Only providers and customers can update bookings." },
         { status: 403 }
       );
     }
@@ -58,18 +90,20 @@ export async function PUT(
       );
     }
 
-    const status = (body as Record<string, unknown>).status;
+    const rawStatus = (body as Record<string, unknown>).status;
 
-    if (status !== "accepted" && status !== "rejected") {
+    if (!isBookingStatus(rawStatus)) {
       return NextResponse.json(
         { success: false, error: "Invalid booking status." },
         { status: 400 }
       );
     }
 
+    const targetStatus: BookingStatus = rawStatus;
+
     const { data: booking, error: bookingError } = await supabase
       .from("bookings")
-      .select("id, provider_id, status")
+      .select("id, provider_id, customer_id, status")
       .eq("id", id)
       .maybeSingle();
 
@@ -89,34 +123,62 @@ export async function PUT(
       );
     }
 
-    if (booking.provider_id !== user.id) {
-      return NextResponse.json(
-        { success: false, error: "You are not allowed to update this booking." },
-        { status: 403 }
-      );
+    const currentStatus = booking.status as BookingStatus;
+
+    // --- Role-based authorization ---
+    if (profile.role === "provider") {
+      // Provider must own this booking
+      if (booking.provider_id !== user.id) {
+        return NextResponse.json(
+          { success: false, error: "You are not allowed to update this booking." },
+          { status: 403 }
+        );
+      }
+
+      // Provider-only transitions
+      const allowed = PROVIDER_TRANSITIONS[currentStatus] ?? [];
+      if (!allowed.includes(targetStatus)) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Cannot transition booking from "${currentStatus}" to "${targetStatus}".`,
+          },
+          { status: 400 }
+        );
+      }
+    } else {
+      // Customer role — must be the booking's customer
+      if (booking.customer_id !== user.id) {
+        return NextResponse.json(
+          { success: false, error: "You are not allowed to update this booking." },
+          { status: 403 }
+        );
+      }
+
+      // Customer-only transitions
+      const allowed = CUSTOMER_TRANSITIONS[currentStatus] ?? [];
+      if (!allowed.includes(targetStatus)) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Cannot cancel a booking that is "${currentStatus}".`,
+          },
+          { status: 400 }
+        );
+      }
     }
 
-    if (booking.status !== "pending") {
-      return NextResponse.json(
-        {
-          success: false,
-          error: `Booking is already ${booking.status}.`,
-        },
-        { status: 409 }
-      );
-    }
-
-    const { data, error } = await supabase
+    // --- Perform the update atomically with optimistic concurrency ---
+    const { data: updatedBooking, error: updateError } = await supabase
       .from("bookings")
-      .update({ status })
+      .update({ status: targetStatus })
       .eq("id", id)
-      .eq("provider_id", user.id)
-      .eq("status", "pending")
+      .eq("status", currentStatus) // protect against concurrent modifications
       .select("id, provider_id, customer_id, status")
       .single();
 
-    if (error) {
-      console.error("BOOKING_UPDATE_ERROR", error);
+    if (updateError) {
+      console.error("BOOKING_UPDATE_ERROR", updateError);
 
       return NextResponse.json(
         { success: false, error: "Unable to update the booking." },
@@ -124,16 +186,20 @@ export async function PUT(
       );
     }
 
-    if (!data) {
+    if (!updatedBooking) {
+      // The status changed between our read and write — likely a race condition
       return NextResponse.json(
-        { success: false, error: "Booking could not be updated." },
-        { status: 404 }
+        {
+          success: false,
+          error: `Booking status has changed. It is no longer "${currentStatus}".`,
+        },
+        { status: 409 }
       );
     }
 
     return NextResponse.json({
       success: true,
-      booking: data,
+      booking: updatedBooking,
     });
   } catch (error) {
     console.error("BOOKING_UPDATE_ERROR", error);
