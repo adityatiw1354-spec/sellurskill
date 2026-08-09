@@ -194,12 +194,6 @@ if (updateError) {
         {
           success: false,
           error: "Unable to update the booking.",
-          supabaseError: {
-            message: updateError.message,
-            code: updateError.code,
-            details: updateError.details,
-            hint: updateError.hint,
-          },
         },
         { status: 500 }
       );
