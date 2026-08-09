@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { BookingActions } from "@/components/provider/booking-actions";
 import { createClient } from "@/lib/supabase/server";
+import { getProviderId } from "@/lib/provider";
 
 const statusClasses: Record<string, string> = {
   pending: "bg-amber-500",
@@ -29,7 +30,13 @@ export default async function ProviderBookingsPage() {
     .eq("id", user.id)
     .maybeSingle();
 
-  if (profile?.role !== "provider") {
+if (profile?.role !== "provider") {
+    redirect("/dashboard");
+  }
+
+  const provider = await getProviderId(user.id);
+
+  if (!provider) {
     redirect("/dashboard");
   }
 
@@ -47,7 +54,7 @@ export default async function ProviderBookingsPage() {
         phone
       )
     `)
-    .eq("provider_id", user.id)
+    .eq("provider_id", provider)
     .order("created_at", { ascending: false });
 
   if (error) {

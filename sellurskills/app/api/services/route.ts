@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getProviderId } from "@/lib/provider";
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
@@ -41,10 +42,19 @@ export async function GET() {
       );
     }
 
+    const provider = await getProviderId(user.id);
+
+    if (!provider) {
+      return NextResponse.json(
+        { success: false, error: "Provider profile not found." },
+        { status: 403 }
+      );
+    }
+
     const { data: services, error } = await supabase
       .from("services")
       .select("id, title, description, price, duration")
-      .eq("provider_id", user.id)
+      .eq("provider_id", provider)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -148,8 +158,17 @@ export async function POST(request: Request) {
       );
     }
 
+    const provider = await getProviderId(user.id);
+
+    if (!provider) {
+      return NextResponse.json(
+        { success: false, error: "Provider profile not found." },
+        { status: 403 }
+      );
+    }
+
     const { error } = await supabase.from("services").insert({
-      provider_id: user.id,
+      provider_id: provider,
       title,
       description,
       price,

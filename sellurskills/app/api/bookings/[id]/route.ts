@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getProviderId } from "@/lib/provider";
 
 type BookingStatus = "pending" | "accepted" | "rejected" | "in_progress" | "completed" | "cancelled";
 
@@ -125,10 +126,19 @@ export async function PUT(
 
     const currentStatus = booking.status as BookingStatus;
 
-    // --- Role-based authorization ---
+// --- Role-based authorization ---
     if (profile.role === "provider") {
+      const provider = await getProviderId(user.id);
+
+      if (!provider) {
+        return NextResponse.json(
+          { success: false, error: "Provider profile not found." },
+          { status: 403 }
+        );
+      }
+
       // Provider must own this booking
-      if (booking.provider_id !== user.id) {
+      if (booking.provider_id !== provider) {
         return NextResponse.json(
           { success: false, error: "You are not allowed to update this booking." },
           { status: 403 }

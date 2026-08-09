@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getProviderId } from "@/lib/provider";
 import { EditServiceForm } from "@/components/provider/edit-service-form";
 
 export default async function EditServicePage({
@@ -27,11 +28,17 @@ export default async function EditServicePage({
     return notFound();
   }
 
+  const provider = await getProviderId(user.id);
+
+  if (!provider) {
+    return notFound();
+  }
+
   const { data: service } = await supabase
     .from("services")
     .select("*")
     .eq("id", id)
-    .eq("provider_id", user.id)
+    .eq("provider_id", provider)
     .single();
 
   if (!service) return notFound();
