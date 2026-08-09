@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getProviderId } from "@/lib/provider";
 
 export async function getCustomerStats(userId: string) {
   const supabase = await createClient();
@@ -39,15 +40,27 @@ export async function getRecentBookings(userId: string) {
 export async function getProviderStats(userId: string) {
   const supabase = await createClient();
 
+  const provider = await getProviderId(userId);
+
+  if (!provider) {
+    return {
+      totalServices: 0,
+      pendingRequests: 0,
+      acceptedBookings: 0,
+      rejectedBookings: 0,
+      totalRevenue: 0,
+    };
+  }
+
   const { data: services } = await supabase
     .from("services")
     .select("id")
-    .eq("provider_id", userId);
+    .eq("provider_id", provider);
 
   const { data: bookings } = await supabase
     .from("bookings")
     .select("id, status, amount")
-    .eq("provider_id", userId);
+    .eq("provider_id", provider);
 
   const totalServices = services?.length ?? 0;
   const pendingRequests = bookings?.filter((booking) => booking.status === "pending").length ?? 0;
@@ -69,6 +82,12 @@ export async function getProviderStats(userId: string) {
 export async function getProviderRecentBookings(userId: string) {
   const supabase = await createClient();
 
+  const provider = await getProviderId(userId);
+
+  if (!provider) {
+    return [];
+  }
+
   const { data } = await supabase
     .from("bookings")
     .select(`
@@ -80,7 +99,7 @@ export async function getProviderRecentBookings(userId: string) {
       services (title),
       profiles!bookings_customer_id_fkey (full_name)
     `)
-    .eq("provider_id", userId)
+    .eq("provider_id", provider)
     .order("created_at", { ascending: false })
     .limit(5);
 
