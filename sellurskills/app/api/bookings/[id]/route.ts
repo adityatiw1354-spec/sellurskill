@@ -187,11 +187,20 @@ export async function PUT(
       .select("id, provider_id, customer_id, status")
       .single();
 
-    if (updateError) {
+if (updateError) {
       console.error("BOOKING_UPDATE_ERROR", updateError);
 
       return NextResponse.json(
-        { success: false, error: "Unable to update the booking." },
+        {
+          success: false,
+          error: "Unable to update the booking.",
+          supabaseError: {
+            message: updateError.message,
+            code: updateError.code,
+            details: updateError.details,
+            hint: updateError.hint,
+          },
+        },
         { status: 500 }
       );
     }
