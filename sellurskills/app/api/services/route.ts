@@ -198,7 +198,10 @@ export async function POST(request: Request) {
     );
   }
 }
-export async function DELETE(request: Request) {
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const supabase = await createClient();
 
@@ -213,16 +216,7 @@ export async function DELETE(request: Request) {
       );
     }
 
-    const body = await request.json().catch(() => null);
-
-    if (!body || typeof body !== "object") {
-      return NextResponse.json(
-        { success: false, error: "Invalid request body." },
-        { status: 400 }
-      );
-    }
-
-    const serviceId = (body as Record<string, unknown>).id;
+    const { id: serviceId } = await params;
 
     if (!isNonEmptyString(serviceId)) {
       return NextResponse.json(
@@ -262,7 +256,7 @@ export async function DELETE(request: Request) {
       );
     }
 
-    // Make sure the service belongs to this provider.
+    // Make sure this service belongs to the current provider.
     const { data: service, error: serviceError } = await supabase
       .from("services")
       .select("id")
@@ -286,12 +280,8 @@ export async function DELETE(request: Request) {
       );
     }
 
-    /*
-     * Only active bookings should prevent service deletion.
-     *
-     * completed/cancelled/rejected bookings are historical and
-     * should not make the service undeletable.
-     */
+    // Only bookings that are still active should block deletion.
+    // Historical bookings do NOT block deletion.
     const { data: activeBookings, error: bookingError } = await supabase
       .from("bookings")
       .select("id")
