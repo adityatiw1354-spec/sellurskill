@@ -198,3 +198,152 @@ export async function POST(request: Request) {
     );
   }
 }
+export async function DELETE(request: Request) {
+  try {
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required." },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json().catch(() => null);
+
+    if (!body || typeof body !== "object") {
+      return NextResponse.json(
+        { success: false, error: "Invalid request body." },
+        { status: 400 }
+      );
+    }
+
+    const serviceId = (body as Record<string, unknown>).id;
+
+    if (!isNonEmptyString(serviceId)) {
+      return NextResponse.json(
+        { success: false, error: "Service ID is required." },
+        { status: 400 }
+      );
+    }
+
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (profileError) {
+      console.error("SERVICE_DELETE_PROFILE_ERROR", profileError);
+
+      return NextResponse.json(
+        { success: false, error: "Unable to load profile." },
+        { status: 500 }
+      );
+    }
+
+    if (profile?.role !== "provider") {
+      return NextResponse.json(
+        { success: false, error: "Only providers can delete services." },
+        { status: 403 }
+      );
+    }
+
+    const provider = await getProviderId(user.id);
+
+    if (!provider) {
+      return NextResponse.json(
+        { success: false, error: "Provider profile not found." },
+        { status: 403 }
+      );
+    }
+
+    // Make sure the service belongs to this provider.
+    const { data: service, error: serviceError } = await supabase
+      .from("services")
+      .select("id")
+      .eq("id", serviceId)
+      .eq("provider_id", provider)
+      .maybeSingle();
+
+    if (serviceError) {
+      console.error("SERVICE_DELETE_LOOKUP_ERROR", serviceError);
+
+      return NextResponse.json(
+        { success: false, error: "Unable to load the service." },
+        { status: 500 }
+      );
+    }
+
+    if (!service) {
+      return NextResponse.json(
+        { success: false, error: "Service not found." },
+        { status: 404 }
+      );
+    }
+
+    /*
+     * Only active bookings should prevent service deletion.
+     *
+     * completed/cancelled/rejected bookings are historical and
+     * should not make the service undeletable.
+     */
+    const { data: activeBookings, error: bookingError } = await supabase
+      .from("bookings")
+      .select("id")
+      .eq("service_id", serviceId)
+      .in("status", ["pending", "accepted", "in_progress"])
+      .limit(1);
+
+    if (bookingError) {
+      console.error("SERVICE_DELETE_BOOKING_CHECK_ERROR", bookingError);
+
+      return NextResponse.json(
+        { success: false, error: "Unable to check service bookings." },
+        { status: 500 }
+      );
+    }
+
+    if (activeBookings && activeBookings.length > 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "This service cannot be deleted because it has an active booking.",
+        },
+        { status: 409 }
+      );
+    }
+
+    const { error: deleteError } = await supabase
+      .from("services")
+      .delete()
+      .eq("id", serviceId)
+      .eq("provider_id", provider);
+
+    if (deleteError) {
+      console.error("SERVICE_DELETE_ERROR", deleteError);
+
+      return NextResponse.json(
+        { success: false, error: "Unable to delete the service." },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Service deleted successfully.",
+    });
+  } catch (error) {
+    console.error("SERVICE_DELETE_ERROR", error);
+
+    return NextResponse.json(
+      { success: false, error: "Unable to delete the service." },
+      { status: 500 }
+    );
+  }
+}
